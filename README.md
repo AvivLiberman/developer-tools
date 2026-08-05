@@ -2,7 +2,7 @@
 
 **Free online tools for developers** - JSON comparison, text conversion, URL analysis, and more!
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-aviv--liberman.github.io/developer--tools-blue?style=for-the-badge&logo=github)](https://avivliberman.github.io/developer-tools/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-avivliberman.github.io/developer--tools-blue?style=for-the-badge&logo=github)](https://avivliberman.github.io/developer-tools/)
 
 ## ✨ What You Can Do
 
