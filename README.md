@@ -2,7 +2,7 @@
 
 **Free online tools for developers** - JSON comparison, text conversion, URL analysis, and more!
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-aviv--liberman.github.io/developer--tools-blue?style=for-the-badge&logo=github)](https://aviv-liberman.github.io/developer-tools/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-aviv--liberman.github.io/developer--tools-blue?style=for-the-badge&logo=github)](https://avivliberman.github.io/developer-tools/)
 
 ## ✨ What You Can Do
 
@@ -43,7 +43,7 @@
 
 ## 🚀 Quick Start
 
-1. **Visit the live site**: [https://aviv-liberman.github.io/developer-tools/](https://aviv-liberman.github.io/developer-tools/)
+1. **Visit the live site**: [https://aviv-liberman.github.io/developer-tools/](https://avivliberman.github.io/developer-tools/)
 2. **Choose your tool** from the tab navigation
 3. **Start using** - no registration required!
 
@@ -91,4 +91,4 @@ Works in all modern browsers:
 
 **Made with ❤️ for the developer community**
 
-*Need a feature or found a bug? [Open an issue](https://github.com/aviv-liberman/developer-tools/issues) on GitHub!*
+*Need a feature or found a bug? [Open an issue](https://github.com/avivliberman/developer-tools/issues) on GitHub!*
