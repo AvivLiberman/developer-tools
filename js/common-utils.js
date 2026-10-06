@@ -155,7 +155,7 @@ function setupTabNavigation() {
 // Handle URL hash changes
 function handleHashChange() {
     const hash = window.location.hash.substring(1); // Remove the # symbol
-    const validTabs = ['json', 'case', 'url', 'analytics'];
+    const validTabs = ['json', 'case', 'url', 'analytics', 'csv'];
     
     if (hash && validTabs.includes(hash)) {
         switchTab(hash);
@@ -174,6 +174,8 @@ function initializeApp() {
     convertCases();
     // Initialize URL breakdown with empty state
     breakdownURL();
+    // Initialize CSV viewer (also handles ?url= and ?open=csv launches)
+    setupCsvViewer();
     // Handle initial hash
     handleHashChange();
 }

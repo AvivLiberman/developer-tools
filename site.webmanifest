@@ -1,7 +1,7 @@
 {
     "name": "Developer Tools",
     "short_name": "DevTools",
-    "description": "Essential developer tools for JSON comparison, text conversion, URL breakdown, and JSON analytics",
+    "description": "Essential developer tools for JSON comparison, text conversion, URL breakdown, JSON analytics, and viewing CSV files",
     "icons": [
         {
             "src": "./favicon-16x16.png",
@@ -16,17 +16,47 @@
         {
             "src": "./favicon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "./favicon-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "./favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
         }
     ],
     "theme_color": "#3B82F6",
     "background_color": "#ffffff",
     "display": "standalone",
     "start_url": "./",
-    "scope": "./"
+    "scope": "./",
+    "file_handlers": [
+        {
+            "action": "./?open=csv#csv",
+            "accept": {
+                "text/csv": [
+                    ".csv"
+                ],
+                "text/tab-separated-values": [
+                    ".tsv"
+                ],
+                "text/plain": [
+                    ".txt"
+                ]
+            },
+            "launch_type": "single-client"
+        }
+    ],
+    "launch_handler": {
+        "client_mode": [
+            "focus-existing",
+            "auto"
+        ]
+    }
 }

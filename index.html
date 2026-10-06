@@ -6,9 +6,9 @@
     
     <!-- Primary Meta Tags -->
     <title>Developer Tools</title>
-    <meta name="title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown & Analytics">
-    <meta name="description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, and JSON analytics. Free online tools for developers.">
-    <meta name="keywords" content="JSON diff, JSON comparison, text converter, case converter, URL breakdown, JSON analytics, developer tools, online tools">
+    <meta name="title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown, JSON Analytics & CSV Viewer">
+    <meta name="description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, JSON analytics, and viewing CSV files. Free online tools for developers.">
+    <meta name="keywords" content="JSON diff, JSON comparison, text converter, case converter, URL breakdown, JSON analytics, CSV viewer, CSV to JSON, TSV viewer, developer tools, online tools">
     <meta name="author" content="Developer Tools">
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
@@ -17,8 +17,8 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://aviv-liberman.github.io/developer-tools/">
-    <meta property="og:title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown & Analytics">
-    <meta property="og:description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, and JSON analytics. Free online tools for developers.">
+    <meta property="og:title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown, JSON Analytics & CSV Viewer">
+    <meta property="og:description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, JSON analytics, and viewing CSV files. Free online tools for developers.">
     <meta property="og:image" content="https://aviv-liberman.github.io/developer-tools/favicon-192x192.png">
     <meta property="og:site_name" content="Developer Tools">
     <meta property="og:locale" content="en_US">
@@ -26,8 +26,8 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://aviv-liberman.github.io/developer-tools/">
-    <meta property="twitter:title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown & Analytics">
-    <meta property="twitter:description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, and JSON analytics. Free online tools for developers.">
+    <meta property="twitter:title" content="Developer Tools - JSON Diff, Text Converter, URL Breakdown, JSON Analytics & CSV Viewer">
+    <meta property="twitter:description" content="Essential developer tools for JSON comparison, text case conversion, URL breakdown, JSON analytics, and viewing CSV files. Free online tools for developers.">
     <meta property="twitter:image" content="https://aviv-liberman.github.io/developer-tools/favicon-192x192.png">
     
     <!-- Favicon -->
@@ -51,6 +51,7 @@
     <!-- External Resources -->
     <script src="https://cdn.jsdelivr.net/npm/jsondiffpatch@0.4.1/dist/jsondiffpatch.umd.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsondiffpatch@0.4.1/dist/formatters-styles/html.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Hide unchanged elements when toggle is active */
@@ -70,19 +71,140 @@
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
+
+        /* CSV Viewer virtualized table */
+        #csv-table {
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #csv-table th,
+        #csv-table td {
+            height: 32px;
+            padding: 0 8px;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        #csv-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+            padding: 0;
+        }
+
+        #csv-table td {
+            cursor: pointer;
+            color: #111827;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8125rem;
+        }
+
+        #csv-table tr.csv-odd td {
+            background: #f9fafb;
+        }
+
+        #csv-table td:hover,
+        #csv-table td:focus {
+            background: #eff6ff;
+        }
+
+        #csv-table td:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+        }
+
+        #csv-table .csv-rownum {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-weight: 400;
+            font-size: 0.75rem;
+            text-align: right;
+            padding: 0 8px;
+        }
+
+        #csv-table thead .csv-rownum {
+            z-index: 3;
+        }
+
+        #csv-table .csv-spacer td,
+        #csv-table td.csv-empty-cell {
+            padding: 0;
+            border: 0;
+            background: transparent;
+            cursor: default;
+        }
+
+        #csv-table td.csv-empty-cell {
+            padding: 40px 16px;
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+            font-family: inherit;
+        }
+
+        .csv-sort-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            width: 100%;
+            height: 32px;
+            padding: 0 14px 0 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .csv-sort-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .csv-sort-btn:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+        }
+
+        .csv-resizer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 100%;
+            cursor: col-resize;
+            touch-action: none;
+        }
+
+        .csv-resizer:hover,
+        .csv-resizer:focus-visible,
+        .csv-resizer.csv-resizing {
+            background: #3b82f6;
+            outline: none;
+        }
     </style>
 </head>
 <body class="m-0 p-5 font-sans bg-gray-100">
     <main class="max-w-6xl mx-auto bg-white p-5 rounded-lg shadow-lg">
         <header>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">Developer Tools</h1>
-            <p class="text-gray-600 mb-8">Professional developer utilities for JSON comparison, text case conversion, URL analysis, and JSON analytics.</p>
+            <p class="text-gray-600 mb-8">Professional developer utilities for JSON comparison, text case conversion, URL analysis, JSON analytics, and CSV viewing.</p>
         </header>
         
         <!-- Tab Navigation -->
         <nav class="mb-8" role="tablist" aria-label="Developer Tools Navigation">
             <div class="border-b border-gray-200">
-                <div class="-mb-px flex space-x-8">
+                <div class="-mb-px flex space-x-8 overflow-x-auto">
                     <a href="#json" id="json-tab" class="tab-button py-2 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600" 
                             role="tab" aria-selected="true" aria-controls="json" tabindex="0" onclick="switchTab('json')">
                         JSON Diff Tool
@@ -98,6 +220,10 @@
                     <a href="#analytics" id="analytics-tab" class="tab-button py-2 px-1 border-b-2 font-medium text-sm hover:text-gray-700 border-transparent text-gray-500" 
                             role="tab" aria-selected="false" aria-controls="analytics" tabindex="-1" onclick="switchTab('analytics')">
                         JSON Analytics
+                    </a>
+                    <a href="#csv" id="csv-tab" class="tab-button py-2 px-1 border-b-2 font-medium text-sm hover:text-gray-700 border-transparent text-gray-500 whitespace-nowrap" 
+                            role="tab" aria-selected="false" aria-controls="csv" tabindex="-1" onclick="switchTab('csv')">
+                        CSV Viewer
                     </a>
                 </div>
             </div>
@@ -429,6 +555,156 @@
                 </div>
             </div>
         </section>
+
+        <!-- CSV Viewer Tab -->
+        <section id="csv" class="tab-content" role="tabpanel" aria-labelledby="csv-tab" style="display: none;">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">CSV Viewer</h2>
+            <p class="text-gray-600 mb-6">View, sort, filter and export CSV/TSV files. Everything runs in your browser — files are never uploaded. Click any cell to copy its value.</p>
+
+            <!-- One-time install hint (File Handling API) -->
+            <div id="csv-install-hint" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 items-start gap-3" style="display: none;" role="note">
+                <div class="flex-1">
+                    <p><strong>Tip:</strong> Install this site as an app (Chrome/Edge → Install) to open .csv files from Finder with “Open With”.</p>
+                    <p class="mt-1 text-blue-700">Safari does not support opening files in web apps; use Chrome or Edge for this.</p>
+                    <button type="button" id="csv-install-btn" class="mt-3 bg-blue-600 text-white py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300" style="display: none;">
+                        Install app
+                    </button>
+                </div>
+                <button type="button" id="csv-install-dismiss" class="text-blue-700 hover:text-blue-900 text-lg leading-none px-2" aria-label="Dismiss install tip">&times;</button>
+            </div>
+
+            <!-- Input Method Selection -->
+            <div class="mb-6">
+                <label for="csv-input-method" class="block text-sm font-medium text-gray-700 mb-2">Choose Input Method:</label>
+                <select id="csv-input-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="file">Upload CSV File</option>
+                    <option value="paste">Paste CSV Content</option>
+                    <option value="url">Load from URL</option>
+                </select>
+            </div>
+
+            <!-- File Upload Section -->
+            <div id="csv-file-section" class="mb-6">
+                <div class="p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50 transition-colors duration-300 hover:border-blue-500" id="csv-file-upload">
+                    <label for="csv-file" class="cursor-pointer text-blue-600 font-semibold hover:text-blue-800">
+                        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Choose CSV File<br>
+                        <small class="text-gray-500">or drag and drop here (.csv, .tsv, .txt)</small>
+                    </label>
+                    <input type="file" id="csv-file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" class="hidden">
+                    <div class="mt-2 text-sm text-gray-600" id="csv-file-info"></div>
+                </div>
+            </div>
+
+            <!-- Paste Section -->
+            <div id="csv-paste-section" class="mb-6" style="display: none;">
+                <label for="csv-paste-input" class="block text-sm font-medium text-gray-700 mb-2">Paste CSV Content:</label>
+                <textarea
+                    id="csv-paste-input"
+                    placeholder="name,email,age&#10;Ada,ada@example.com,36"
+                    class="w-full h-40 p-3 border border-gray-300 rounded-lg resize-y font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    spellcheck="false"
+                ></textarea>
+                <button type="button" id="csv-parse-btn" class="mt-3 bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
+                    Parse CSV
+                </button>
+            </div>
+
+            <!-- URL Section -->
+            <div id="csv-url-section" class="mb-6" style="display: none;">
+                <form id="csv-url-form">
+                    <label for="csv-url-input" class="block text-sm font-medium text-gray-700 mb-2">CSV URL:</label>
+                    <div class="flex gap-3 flex-wrap">
+                        <input type="url" id="csv-url-input" placeholder="https://raw.githubusercontent.com/owner/repo/main/data.csv" class="flex-1 min-w-0 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button type="submit" class="bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
+                            Load from URL
+                        </button>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">The server must allow cross-origin requests (CORS). You can also link directly: <span class="font-mono">?url=&lt;encoded-url&gt;#csv</span></p>
+                </form>
+            </div>
+
+            <!-- Parse Options -->
+            <div class="mb-6 flex flex-wrap items-end gap-6">
+                <div>
+                    <label for="csv-delimiter" class="block text-sm font-medium text-gray-700 mb-2">Delimiter:</label>
+                    <select id="csv-delimiter" class="p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Auto-detect</option>
+                        <option value=",">Comma ( , )</option>
+                        <option value=";">Semicolon ( ; )</option>
+                        <option value="&#9;">Tab</option>
+                        <option value="|">Pipe ( | )</option>
+                    </select>
+                </div>
+                <label class="flex items-center gap-2 text-sm font-medium text-gray-700 pb-2 cursor-pointer">
+                    <input type="checkbox" id="csv-has-header" class="rounded" checked>
+                    First row is header
+                </label>
+            </div>
+
+            <!-- Progress (large files) -->
+            <div id="csv-progress" class="mb-6" style="display: none;">
+                <div class="flex items-center justify-between mb-2 gap-4">
+                    <span id="csv-progress-text" class="text-sm text-gray-700" aria-live="polite"></span>
+                    <button type="button" id="csv-cancel-btn" class="bg-gray-600 text-white py-1 px-3 rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors duration-300">Cancel</button>
+                </div>
+                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden" role="progressbar" aria-label="Parsing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="csv-progress-bar" class="h-full bg-blue-600 transition-all duration-200" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="csv-message" class="mb-6" role="status" aria-live="polite"></div>
+
+            <!-- Empty State -->
+            <div id="csv-empty" class="text-center p-10 text-gray-500 italic border border-dashed border-gray-200 rounded-lg">
+                No CSV loaded yet. Choose a file, paste CSV content, or load one from a URL.
+            </div>
+
+            <!-- Results -->
+            <div id="csv-results" style="display: none;">
+                <!-- Toolbar -->
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                    <div class="relative flex-1 min-w-48">
+                        <label for="csv-search" class="sr-only">Search all visible columns</label>
+                        <input type="search" id="csv-search" placeholder="Search…" class="w-full p-2 pr-24 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span id="csv-match-count" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none" aria-live="polite"></span>
+                    </div>
+                    <details class="relative">
+                        <summary class="list-none cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300">
+                            Columns ▾
+                        </summary>
+                        <div class="absolute right-0 z-20 mt-2 w-64 max-h-80 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg p-2">
+                            <button type="button" id="csv-show-all-cols" class="w-full text-left text-sm text-blue-600 hover:text-blue-800 font-medium py-1 px-2">Show all columns</button>
+                            <div id="csv-column-list"></div>
+                        </div>
+                    </details>
+                    <button type="button" id="csv-copy-json" class="bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors duration-300">
+                        Copy as JSON
+                    </button>
+                    <button type="button" id="csv-download-json" class="bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300">
+                        Download JSON
+                    </button>
+                    <button type="button" id="csv-download-csv" class="bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300">
+                        Download CSV
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Exports use the current view: search filter, sort order and visible columns. Use arrow keys to move between cells and Enter to copy.</p>
+
+                <!-- Table -->
+                <div id="csv-table-wrap" class="overflow-auto border border-gray-200 rounded-lg bg-white" style="height: 60vh; min-height: 280px;" tabindex="0" role="region" aria-label="CSV data table">
+                    <table id="csv-table">
+                        <colgroup id="csv-colgroup"></colgroup>
+                        <thead id="csv-thead"></thead>
+                        <tbody id="csv-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Status Bar -->
+                <div id="csv-status" class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2"></div>
+            </div>
+        </section>
     </main>
 
     <!-- JavaScript Files -->
@@ -437,6 +713,7 @@
     <script src="js/case-converter.js"></script>
     <script src="js/url-breakdown.js"></script>
     <script src="js/json-analytics.js"></script>
+    <script src="js/csv-viewer.js"></script>
     
     <script>
         // Initialize the app when the page loads

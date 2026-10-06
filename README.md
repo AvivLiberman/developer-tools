@@ -1,6 +1,6 @@
 # 🛠️ Developer Tools
 
-**Free online tools for developers** - JSON comparison, text conversion, URL analysis, and more!
+**Free online tools for developers** - JSON comparison, text conversion, URL analysis, CSV viewing, and more!
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-avivliberman.github.io/developer--tools-blue?style=for-the-badge&logo=github)](https://avivliberman.github.io/developer-tools/)
 
@@ -41,16 +41,41 @@
 - Get detailed statistics
 - Format and beautify JSON
 
+### 📑 **CSV Viewer**
+- Open CSV/TSV files by drag & drop, file picker, paste, or URL (`?url=<encoded-url>#csv`)
+- Auto-detects the delimiter (comma, semicolon, tab, pipe) with manual override
+- Handles quoted fields, multi-line cells, BOM and CRLF line endings
+- Fast virtualized table for 100k+ rows; large files parse in a background worker with progress
+- Sort (numeric-aware), search with match count, resize and hide columns
+- Click any cell to copy it; export the current view as JSON or CSV
+- Install as an app to open `.csv` files straight from Finder (see below)
+
 ## 🚀 Quick Start
 
 1. **Visit the live site**: [https://aviv-liberman.github.io/developer-tools/](https://avivliberman.github.io/developer-tools/)
 2. **Choose your tool** from the tab navigation
 3. **Start using** - no registration required!
 
+## 🍎 How to open CSV files from your Mac
+
+The CSV Viewer can register itself as an app for `.csv`, `.tsv` and `.txt` files using the
+[File Handling API](https://developer.chrome.com/docs/capabilities/web-apis/file-handling).
+This needs **Chrome or Edge**. Safari does not support file handling for web apps, so it can't do this.
+
+1. Open [the site](https://avivliberman.github.io/developer-tools/#csv) in Chrome or Edge.
+2. Install it: click the install icon in the address bar, or use **⋮ → Cast, save and share → Install page as app…**
+   (Edge: **… → Apps → Install this site as an app**).
+3. In Finder, right-click a `.csv` file → **Open With** → **Developer Tools**.
+   The first time, Chrome asks you to allow the app to open the file type. Approve it.
+4. Optional: to always use it, select a `.csv` file, press **⌘I** (Get Info), choose **Developer Tools** under
+   **Open with**, then click **Change All…**.
+
+Files are read locally by the app and never uploaded.
+
 ## 💡 Use Cases
 
 - **API Development**: Compare API responses, validate JSON schemas, convert API key formats
-- **Data Analysis**: Convert text formats, analyze JSON structure, standardize data keys
+- **Data Analysis**: Convert text formats, analyze JSON structure, standardize data keys, explore CSV exports
 - **Debugging**: Break down URLs, compare configuration files, normalize JSON keys
 - **Documentation**: Format JSON for documentation, convert between naming conventions
 - **Learning**: Understand JSON structure and URL components, practice case conversions
