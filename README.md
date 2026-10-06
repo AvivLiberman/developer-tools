@@ -41,13 +41,13 @@
 - Get detailed statistics
 - Format and beautify JSON
 
-### 📑 **CSV Viewer**
+### **CSV Viewer**
 - Open CSV/TSV files by drag & drop, file picker, paste, or URL (`?url=<encoded-url>#csv`)
 - Auto-detects the delimiter (comma, semicolon, tab, pipe) with manual override
 - Handles quoted fields, multi-line cells, BOM and CRLF line endings
 - Fast virtualized table for 100k+ rows; large files parse in a background worker with progress
 - Sort (numeric-aware), search with match count, resize and hide columns
-- Click any cell to copy it; export the current view as JSON or CSV
+- Export the current view as JSON or CSV
 - Install as an app to open `.csv` files straight from Finder (see below)
 
 ## 🚀 Quick Start
@@ -56,7 +56,7 @@
 2. **Choose your tool** from the tab navigation
 3. **Start using** - no registration required!
 
-## 🍎 How to open CSV files from your Mac
+## How to open CSV files from your Mac
 
 The CSV Viewer can register itself as an app for `.csv`, `.tsv` and `.txt` files using the
 [File Handling API](https://developer.chrome.com/docs/capabilities/web-apis/file-handling).

@@ -12,7 +12,6 @@
     const OVERSCAN = 12;
     const MAX_ERRORS_SHOWN = 5;
     const DELIMITER_NAMES = { ',': 'comma', ';': 'semicolon', '\t': 'tab', '|': 'pipe' };
-    const HINT_STORAGE_KEY = 'csvInstallHintDismissed';
 
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
@@ -41,7 +40,6 @@
         parser: null
     };
 
-    let installPromptEvent = null;
     let filterTimer = null;
     let pasteTimer = null;
     let scrollFrame = 0;
@@ -229,7 +227,7 @@
                 showParseError(formatErrors(realErrors));
             } else {
                 resetTable();
-                setNotice('The CSV is empty — no rows were found.', 'warning');
+                setNotice('The CSV is empty. No rows were found.', 'warning');
             }
             return;
         }
@@ -310,6 +308,15 @@
         state.view = [];
         $('csv-results').style.display = 'none';
         $('csv-empty').style.display = 'block';
+        setInputPanelVisible(true);
+    }
+
+    // The input panel is big; once a file is loaded the table gets its space back
+    function setInputPanelVisible(visible) {
+        $('csv-input-panel').style.display = visible ? 'block' : 'none';
+        const button = $('csv-change-source');
+        button.setAttribute('aria-expanded', visible ? 'true' : 'false');
+        button.textContent = visible ? 'Hide input options' : 'Load another file';
     }
 
     function buildTable() {
@@ -340,6 +347,7 @@
 
         $('csv-empty').style.display = 'none';
         $('csv-results').style.display = 'block';
+        setInputPanelVisible(false);
 
         renderColumnToggles();
         updateView();
@@ -469,6 +477,19 @@
 
     // ---------- Rendering ----------
 
+    // Sort indicator. Chevrons drawn as SVG rather than ▲/▼/↕ glyphs, which render
+    // at wildly different weights and baselines across platforms and fonts.
+    function sortIcon(direction) {
+        const paths = direction === 1
+            ? '<path d="M3 7.5 L6 4.5 L9 7.5"/>'
+            : direction === -1
+                ? '<path d="M3 4.5 L6 7.5 L9 4.5"/>'
+                : '<path d="M3 5 L6 2.5 L9 5"/><path d="M3 7 L6 9.5 L9 7"/>';
+        return '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" ' +
+            'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            paths + '</svg>';
+    }
+
     function renderHeader() {
         const columns = visibleColumns();
         const table = $('csv-table');
@@ -490,11 +511,11 @@
             const name = state.headers[c];
             const sorted = state.sortCol === c && state.sortDir;
             const ariaSort = sorted ? (state.sortDir === 1 ? 'ascending' : 'descending') : 'none';
-            const arrow = sorted ? (state.sortDir === 1 ? '▲' : '▼') : '↕';
+            const arrow = sortIcon(sorted ? state.sortDir : 0);
             header += `<th scope="col" aria-sort="${ariaSort}" title="${escapeHtml(name)}">` +
                 `<button type="button" class="csv-sort-btn" data-col="${c}" aria-label="Sort by ${escapeHtml(name)}">` +
                 `<span class="truncate">${escapeHtml(name)}</span>` +
-                `<span class="csv-sort-arrow ${sorted ? 'text-blue-600' : 'text-gray-300'}" aria-hidden="true">${arrow}</span>` +
+                `<span class="csv-sort-arrow flex items-center ${sorted ? 'text-blue-600' : 'text-gray-400'}" aria-hidden="true">${arrow}</span>` +
                 '</button>' +
                 `<span class="csv-resizer" data-col="${c}" role="separator" aria-orientation="vertical" tabindex="0" ` +
                 `aria-label="Resize column ${escapeHtml(name)}" aria-valuenow="${state.colWidths[c]}" title="Drag (or use ←/→) to resize"></span>` +
@@ -575,13 +596,14 @@
             ? `${formatCount(state.columnCount)} ${plural(state.columnCount, 'column')}`
             : `${formatCount(columns)} of ${formatCount(state.columnCount)} ${plural(state.columnCount, 'column')}`;
         const delimiterText = `Delimiter: ${delimiterLabel(state.delimiter)} ${state.delimiterAuto ? '(auto-detected)' : '(manual)'}`;
-        const sourceText = source ? `${escapeHtml(source.name)} · ${formatBytes(source.size)}` : '';
+        $('csv-source-name').innerHTML = source
+            ? `${escapeHtml(source.name)} <span class="font-normal text-gray-500">${formatBytes(source.size)}</span>`
+            : '';
 
         $('csv-status').innerHTML = [
             `<span class="font-semibold text-gray-800">${rowsText} × ${columnsText}</span>`,
-            `<span>${delimiterText}</span>`,
-            sourceText ? `<span class="break-all">${sourceText}</span>` : ''
-        ].filter(Boolean).join('<span class="text-gray-300" aria-hidden="true">|</span>');
+            `<span>${delimiterText}</span>`
+        ].join('<span class="text-gray-300" aria-hidden="true">|</span>');
 
         $('csv-match-count').textContent = state.filter
             ? `${formatCount(state.view.length)} match${state.view.length === 1 ? '' : 'es'}`
@@ -644,14 +666,6 @@
         handle.addEventListener('pointercancel', onUp);
     }
 
-    function copyCell(td) {
-        const r = Number(td.dataset.r);
-        const j = Number(td.dataset.c);
-        const c = visibleColumns()[j];
-        const value = cellValue(state.data[state.view[r]], c);
-        copyToClipboard(value, state.headers[c], td);
-    }
-
     function focusCell(r, c) {
         const columns = visibleColumns();
         if (!state.view.length || !columns.length) return;
@@ -677,12 +691,6 @@
         const td = event.target.closest && event.target.closest('td[data-r]');
         const wrap = $('csv-table-wrap');
         if (!td && event.target !== wrap) return;
-
-        if (td && (event.key === 'Enter' || event.key === ' ')) {
-            event.preventDefault();
-            copyCell(td);
-            return;
-        }
 
         const current = td
             ? { r: Number(td.dataset.r), c: Number(td.dataset.c) }
@@ -766,42 +774,6 @@
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    // ---------- Install hint / PWA ----------
-
-    function isStandalone() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    }
-
-    function setupInstallHint() {
-        const hint = $('csv-install-hint');
-        let dismissed = false;
-        try { dismissed = localStorage.getItem(HINT_STORAGE_KEY) === '1'; } catch (e) { /* storage blocked */ }
-        if (dismissed || isStandalone()) return;
-
-        hint.style.display = 'flex';
-        $('csv-install-dismiss').addEventListener('click', () => {
-            hint.style.display = 'none';
-            try { localStorage.setItem(HINT_STORAGE_KEY, '1'); } catch (e) { /* storage blocked */ }
-        });
-
-        const installButton = $('csv-install-btn');
-        window.addEventListener('beforeinstallprompt', (event) => {
-            event.preventDefault();
-            installPromptEvent = event;
-            installButton.style.display = 'inline-block';
-        });
-        installButton.addEventListener('click', async () => {
-            if (!installPromptEvent) return;
-            installPromptEvent.prompt();
-            await installPromptEvent.userChoice;
-            installPromptEvent = null;
-            installButton.style.display = 'none';
-        });
-        window.addEventListener('appinstalled', () => {
-            installButton.style.display = 'none';
-        });
-    }
-
     function showCsvTab() {
         if (window.location.hash !== '#csv') {
             history.replaceState(null, '', `${window.location.pathname}${window.location.search}#csv`);
@@ -829,6 +801,30 @@
         $('csv-url-section').style.display = method === 'url' ? 'block' : 'none';
     }
 
+    function acceptFile(file) {
+        if (!file) return;
+        $('csv-file-info').innerHTML = `<strong>${escapeHtml(file.name)}</strong><br>Size: ${formatBytes(file.size)}`;
+        renderCsvFile(file);
+    }
+
+    function enableFileDrop(element, activeClasses) {
+        element.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            element.classList.add(...activeClasses);
+        });
+        element.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            // Moving over a child fires dragleave on the parent; only clear when really leaving
+            if (element.contains(e.relatedTarget)) return;
+            element.classList.remove(...activeClasses);
+        });
+        element.addEventListener('drop', (e) => {
+            e.preventDefault();
+            element.classList.remove(...activeClasses);
+            acceptFile(e.dataTransfer.files[0]);
+        });
+    }
+
     function setupCsvViewer() {
         const dropZone = $('csv-file-upload');
         const fileInput = $('csv-file');
@@ -836,30 +832,16 @@
 
         $('csv-input-method').addEventListener('change', toggleCsvInputMethod);
 
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (file) {
-                $('csv-file-info').innerHTML = `<strong>${escapeHtml(file.name)}</strong><br>Size: ${formatBytes(file.size)}`;
-                renderCsvFile(file);
-            }
-        });
+        fileInput.addEventListener('change', () => acceptFile(fileInput.files[0]));
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-blue-500', 'bg-blue-50');
-        });
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-        });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                $('csv-file-info').innerHTML = `<strong>${escapeHtml(file.name)}</strong><br>Size: ${formatBytes(file.size)}`;
-                renderCsvFile(file);
-            }
+        enableFileDrop(dropZone, ['border-blue-500', 'bg-blue-50']);
+        // With the input panel collapsed the table is the only target left, so it takes drops too
+        enableFileDrop(wrap, ['ring-2', 'ring-blue-500']);
+
+        $('csv-change-source').addEventListener('click', () => {
+            const hidden = $('csv-input-panel').style.display === 'none';
+            setInputPanelVisible(hidden);
+            if (hidden) $('csv-input-panel').scrollIntoView({ block: 'nearest' });
         });
 
         $('csv-paste-input').addEventListener('input', () => {
@@ -932,7 +914,6 @@
             const td = e.target.closest('td[data-r]');
             if (!td) return;
             state.activeCell = { r: Number(td.dataset.r), c: Number(td.dataset.c) };
-            copyCell(td);
         });
         wrap.addEventListener('keydown', handleGridKeydown);
         wrap.addEventListener('scroll', () => {
@@ -963,8 +944,6 @@
         $('csv-download-csv').addEventListener('click', () => {
             downloadText(viewAsCsv(), `${exportBaseName()}.csv`, 'text/csv');
         });
-
-        setupInstallHint();
 
         // ?url=<encoded-url>#csv loads a remote CSV; ?open=csv is the PWA file-handler entry point
         const params = new URLSearchParams(window.location.search);

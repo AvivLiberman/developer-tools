@@ -103,7 +103,7 @@
         }
 
         #csv-table td {
-            cursor: pointer;
+            cursor: text;
             color: #111827;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 0.8125rem;
@@ -559,89 +559,62 @@
         <!-- CSV Viewer Tab -->
         <section id="csv" class="tab-content" role="tabpanel" aria-labelledby="csv-tab" style="display: none;">
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">CSV Viewer</h2>
-            <p class="text-gray-600 mb-6">View, sort, filter and export CSV/TSV files. Everything runs in your browser — files are never uploaded. Click any cell to copy its value.</p>
+            <p class="text-gray-600 mb-6">View, sort, filter and export CSV/TSV files. Everything runs in your browser; files are never uploaded.</p>
 
-            <!-- One-time install hint (File Handling API) -->
-            <div id="csv-install-hint" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 items-start gap-3" style="display: none;" role="note">
-                <div class="flex-1">
-                    <p><strong>Tip:</strong> Install this site as an app (Chrome/Edge → Install) to open .csv files from Finder with “Open With”.</p>
-                    <p class="mt-1 text-blue-700">Safari does not support opening files in web apps; use Chrome or Edge for this.</p>
-                    <button type="button" id="csv-install-btn" class="mt-3 bg-blue-600 text-white py-1.5 px-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-300" style="display: none;">
-                        Install app
-                    </button>
-                </div>
-                <button type="button" id="csv-install-dismiss" class="text-blue-700 hover:text-blue-900 text-lg leading-none px-2" aria-label="Dismiss install tip">&times;</button>
-            </div>
-
-            <!-- Input Method Selection -->
-            <div class="mb-6">
-                <label for="csv-input-method" class="block text-sm font-medium text-gray-700 mb-2">Choose Input Method:</label>
-                <select id="csv-input-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="file">Upload CSV File</option>
-                    <option value="paste">Paste CSV Content</option>
-                    <option value="url">Load from URL</option>
-                </select>
-            </div>
-
-            <!-- File Upload Section -->
-            <div id="csv-file-section" class="mb-6">
-                <div class="p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50 transition-colors duration-300 hover:border-blue-500" id="csv-file-upload">
-                    <label for="csv-file" class="cursor-pointer text-blue-600 font-semibold hover:text-blue-800">
-                        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                        Choose CSV File<br>
-                        <small class="text-gray-500">or drag and drop here (.csv, .tsv, .txt)</small>
-                    </label>
-                    <input type="file" id="csv-file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" class="hidden">
-                    <div class="mt-2 text-sm text-gray-600" id="csv-file-info"></div>
-                </div>
-            </div>
-
-            <!-- Paste Section -->
-            <div id="csv-paste-section" class="mb-6" style="display: none;">
-                <label for="csv-paste-input" class="block text-sm font-medium text-gray-700 mb-2">Paste CSV Content:</label>
-                <textarea
-                    id="csv-paste-input"
-                    placeholder="name,email,age&#10;Ada,ada@example.com,36"
-                    class="w-full h-40 p-3 border border-gray-300 rounded-lg resize-y font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    spellcheck="false"
-                ></textarea>
-                <button type="button" id="csv-parse-btn" class="mt-3 bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
-                    Parse CSV
-                </button>
-            </div>
-
-            <!-- URL Section -->
-            <div id="csv-url-section" class="mb-6" style="display: none;">
-                <form id="csv-url-form">
-                    <label for="csv-url-input" class="block text-sm font-medium text-gray-700 mb-2">CSV URL:</label>
-                    <div class="flex gap-3 flex-wrap">
-                        <input type="url" id="csv-url-input" placeholder="https://raw.githubusercontent.com/owner/repo/main/data.csv" class="flex-1 min-w-0 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <button type="submit" class="bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
-                            Load from URL
-                        </button>
-                    </div>
-                    <p class="mt-2 text-xs text-gray-500">The server must allow cross-origin requests (CORS). You can also link directly: <span class="font-mono">?url=&lt;encoded-url&gt;#csv</span></p>
-                </form>
-            </div>
-
-            <!-- Parse Options -->
-            <div class="mb-6 flex flex-wrap items-end gap-6">
-                <div>
-                    <label for="csv-delimiter" class="block text-sm font-medium text-gray-700 mb-2">Delimiter:</label>
-                    <select id="csv-delimiter" class="p-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Auto-detect</option>
-                        <option value=",">Comma ( , )</option>
-                        <option value=";">Semicolon ( ; )</option>
-                        <option value="&#9;">Tab</option>
-                        <option value="|">Pipe ( | )</option>
+            <!-- Input panel: collapsed once a file is loaded so the table gets the space -->
+            <div id="csv-input-panel">
+                <!-- Input Method Selection -->
+                <div class="mb-6">
+                    <label for="csv-input-method" class="block text-sm font-medium text-gray-700 mb-2">Choose Input Method:</label>
+                    <select id="csv-input-method" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="file">Upload CSV File</option>
+                        <option value="paste">Paste CSV Content</option>
+                        <option value="url">Load from URL</option>
                     </select>
                 </div>
-                <label class="flex items-center gap-2 text-sm font-medium text-gray-700 pb-2 cursor-pointer">
-                    <input type="checkbox" id="csv-has-header" class="rounded" checked>
-                    First row is header
-                </label>
+
+                <!-- File Upload Section -->
+                <div id="csv-file-section" class="mb-6">
+                    <div class="p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50 transition-colors duration-300 hover:border-blue-500" id="csv-file-upload">
+                        <label for="csv-file" class="cursor-pointer text-blue-600 font-semibold hover:text-blue-800">
+                            <svg class="mx-auto mb-4 text-gray-400 w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            Choose CSV File<br>
+                            <small class="text-gray-500">or drag and drop here (.csv, .tsv, .txt)</small>
+                        </label>
+                        <input type="file" id="csv-file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" class="hidden">
+                        <div class="mt-2 text-sm text-gray-600" id="csv-file-info"></div>
+                    </div>
+                </div>
+
+                <!-- Paste Section -->
+                <div id="csv-paste-section" class="mb-6" style="display: none;">
+                    <label for="csv-paste-input" class="block text-sm font-medium text-gray-700 mb-2">Paste CSV Content:</label>
+                    <textarea
+                        id="csv-paste-input"
+                        placeholder="name,email,age&#10;Ada,ada@example.com,36"
+                        class="w-full h-40 p-3 border border-gray-300 rounded-lg resize-y font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        spellcheck="false"
+                    ></textarea>
+                    <button type="button" id="csv-parse-btn" class="mt-3 bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
+                        Parse CSV
+                    </button>
+                </div>
+
+                <!-- URL Section -->
+                <div id="csv-url-section" class="mb-6" style="display: none;">
+                    <form id="csv-url-form">
+                        <label for="csv-url-input" class="block text-sm font-medium text-gray-700 mb-2">CSV URL:</label>
+                        <div class="flex gap-3 flex-wrap">
+                            <input type="url" id="csv-url-input" placeholder="https://raw.githubusercontent.com/owner/repo/main/data.csv" class="flex-1 min-w-0 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button type="submit" class="bg-blue-600 text-white border-none py-2 px-4 rounded-lg cursor-pointer text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors duration-300">
+                                Load from URL
+                            </button>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500">The server must allow cross-origin requests (CORS). You can also link directly: <span class="font-mono">?url=&lt;encoded-url&gt;#csv</span></p>
+                    </form>
+                </div>
             </div>
 
             <!-- Progress (large files) -->
@@ -664,6 +637,30 @@
 
             <!-- Results -->
             <div id="csv-results" style="display: none;">
+                <!-- Source bar: what is loaded, how it was parsed, and the way back to the input panel -->
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <p id="csv-source-name" class="text-sm font-semibold text-gray-800 min-w-0 break-all"></p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label for="csv-delimiter" class="text-sm font-medium text-gray-700">Delimiter:</label>
+                            <select id="csv-delimiter" class="p-2 pr-8 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Auto-detect</option>
+                                <option value=",">Comma ( , )</option>
+                                <option value=";">Semicolon ( ; )</option>
+                                <option value="&#9;">Tab</option>
+                                <option value="|">Pipe ( | )</option>
+                            </select>
+                        </div>
+                        <label class="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                            <input type="checkbox" id="csv-has-header" class="rounded" checked>
+                            First row is header
+                        </label>
+                        <button type="button" id="csv-change-source" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300" aria-controls="csv-input-panel" aria-expanded="false">
+                            Load another file
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Toolbar -->
                 <div class="flex flex-wrap items-center gap-3 mb-3">
                     <div class="relative flex-1 min-w-48">
@@ -690,10 +687,9 @@
                         Download CSV
                     </button>
                 </div>
-                <p class="text-xs text-gray-500 mb-3">Exports use the current view: search filter, sort order and visible columns. Use arrow keys to move between cells and Enter to copy.</p>
 
                 <!-- Table -->
-                <div id="csv-table-wrap" class="overflow-auto border border-gray-200 rounded-lg bg-white" style="height: 60vh; min-height: 280px;" tabindex="0" role="region" aria-label="CSV data table">
+                <div id="csv-table-wrap" class="overflow-auto border border-gray-200 rounded-lg bg-white" style="height: 72vh; min-height: 320px;" tabindex="0" role="region" aria-label="CSV data table">
                     <table id="csv-table">
                         <colgroup id="csv-colgroup"></colgroup>
                         <thead id="csv-thead"></thead>
@@ -703,6 +699,7 @@
 
                 <!-- Status Bar -->
                 <div id="csv-status" class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2"></div>
+                <p class="mt-2 text-xs text-gray-500">Exports use the current view: search filter, sort order and visible columns. Use arrow keys to move between cells. Drop another file on the table to replace it.</p>
             </div>
         </section>
     </main>
